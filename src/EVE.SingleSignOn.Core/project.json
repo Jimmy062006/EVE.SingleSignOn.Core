@@ -1,0 +1,28 @@
+﻿{
+  "authors": [ "Baldvin Th" ],
+  "description": "EVE Online SingleSignOn client for use with third party development.",
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "NETStandard.Library": "1.6.0",
+    "Newtonsoft.Json": "9.0.1"
+  },
+
+  "frameworks": {
+    "net46": {},
+    "netcoreapp1.0": {},
+    "netstandard1.6": {
+      "imports": "dnxcore50"
+    }
+  },
+
+  "packOptions": {
+    "tags": [ "EVE Online", "SSO", "Single Sign On" ],
+    "repository": {
+      "type": "git",
+      "url": "https://gitlab.com/baldvinth/EVE.SingleSignOn.Core/"
+    },
+    "licenseUrl": "https://gitlab.com/baldvinth/EVE.SingleSignOn.Core/blob/master/LICENSE",
+    "owners": [ "Baldvin Th" ]
+  }
+}
