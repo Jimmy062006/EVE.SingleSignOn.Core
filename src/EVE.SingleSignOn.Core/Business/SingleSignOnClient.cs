@@ -10,7 +10,9 @@ namespace EVE.SingleSignOn.Core
     public class SingleSignOnClient : ISingleSignOnClient
     {
         private readonly SsoSettings _settings;
+        private readonly HttpClient _client;
         private readonly string _userAgent;
+        private readonly string _authorizationString;
 
         /// <summary>
         /// 
@@ -18,8 +20,14 @@ namespace EVE.SingleSignOn.Core
         /// <param name="settings"></param>
         public SingleSignOnClient(SsoSettings settings)
         {
+            // Verify that we have settings
+            if (settings == null || settings == default(SsoSettings))
+                throw new NullReferenceException("The SSO Client has not been initialized with settings.");
+
             _settings = settings;
+            _client = new HttpClient();
             _userAgent = "EVE.SingleSignOn.Core";
+            _authorizationString = AuthorizationString();
         }
 
         /// <summary>
@@ -29,10 +37,6 @@ namespace EVE.SingleSignOn.Core
         /// <returns></returns>
         public async Task<SsoResponse> AuthenticateAsync(string code)
         {
-            // Verify that we have settings
-            if (_settings == null)
-                throw new NullReferenceException("The SSO Client has not been initialized with settings.");
-
             // Verify that the code is not missing
             if (string.IsNullOrEmpty(code))
                 throw new ArgumentNullException("Authentication code is null or empty");
@@ -52,7 +56,7 @@ namespace EVE.SingleSignOn.Core
             };
 
             // Set the necessary headers
-            request.Headers.Authorization = new AuthenticationHeaderValue($"{TokenType.Basic}", AuthorizationString());
+            request.Headers.Authorization = new AuthenticationHeaderValue($"{TokenType.Basic}", _authorizationString);
             request.Headers.Add("Host", builder.Host);
             request.Headers.Add("User-Agent", _userAgent);
             
@@ -65,10 +69,6 @@ namespace EVE.SingleSignOn.Core
         /// <returns></returns>
         public string GetAuthenticationUrl()
         {
-            // Verify that we have settings
-            if (_settings == null)
-                throw new NullReferenceException("The SSO Client has not been initialized with settings.");
-
             var builder = new UriBuilder(_settings.BaseUrl)
             {
                 Path = _settings.AuthorizePath,
@@ -85,10 +85,6 @@ namespace EVE.SingleSignOn.Core
         /// <returns></returns>
         public async Task<SsoResponse> RefreshAsync(string refreshToken)
         {
-            // Verify that we have settings
-            if (_settings == null)
-                throw new NullReferenceException("The SSO Client has not been initialized with settings.");
-
             // Verify that the code is not missing
             if (string.IsNullOrEmpty(refreshToken))
                 throw new ArgumentNullException("Authentication code is null or empty");
@@ -108,7 +104,7 @@ namespace EVE.SingleSignOn.Core
             };
 
             // Set the necessary headers
-            request.Headers.Authorization = new AuthenticationHeaderValue($"{TokenType.Basic}", AuthorizationString());
+            request.Headers.Authorization = new AuthenticationHeaderValue($"{TokenType.Basic}", _authorizationString);
             request.Headers.Add("Host", builder.Host);
             request.Headers.Add("User-Agent", _userAgent);
             
@@ -122,10 +118,6 @@ namespace EVE.SingleSignOn.Core
         /// <returns></returns>
         public async Task<SsoCharacter> VerifyAsync(string accessToken)
         {
-            // Verify that we have settings
-            if (_settings == null)
-                throw new NullReferenceException("The SSO Client has not been initialized with settings.");
-
             // Verify that the code is not missing
             if (string.IsNullOrEmpty(accessToken))
                 throw new ArgumentNullException("Authentication code is null or empty");
@@ -158,10 +150,7 @@ namespace EVE.SingleSignOn.Core
         /// <returns></returns>
         private string AuthorizationString()
         {
-            if (_settings != null)
                 return Convert.ToBase64String(Encoding.UTF8.GetBytes(_settings.ClientId + ":" + _settings.ClientSecret));
-
-            throw new NullReferenceException("The SSO Client has not been initialized with settings.");
         }
 
         /// <summary>
@@ -173,11 +162,8 @@ namespace EVE.SingleSignOn.Core
         private async Task<T> CallSsoAsync<T>(HttpRequestMessage request)
         {
             T response = default(T);
-            using (var client = new HttpClient())
+            using (HttpResponseMessage resp = await _client.SendAsync(request))
             {
-                client.DefaultRequestHeaders.Clear();
-                HttpResponseMessage resp = await client.SendAsync(request);
-
                 // Check whether the SSO answered with 
                 // a positive HTTP Status Code
                 if (resp.IsSuccessStatusCode)

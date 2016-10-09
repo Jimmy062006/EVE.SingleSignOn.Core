@@ -1,0 +1,60 @@
+variables:
+  PROJECT_NAME: "EVE.SingleSignOn.Core"
+  CONFIG_TYPE: "Release"
+before_script:
+  - echo "starting build for %PROJECT_NAME%"
+stages:
+  - validateBuild
+  - updateVersion
+  - package
+  - publish
+
+cache:
+  key: "%CI_BUILD_REF_NAME%"
+  paths:
+  - src/%PROJECT_NAME%/project.json
+  - nupkg/
+
+
+validateBuild:
+  stage: validateBuild
+  before_script:
+  - echo "Restoring NuGet Packages..."
+  - dotnet restore "src/"
+  only:
+    - branches
+  except:
+    - master
+  script:
+    - dotnet build "src\%PROJECT_NAME%" --configuration %CONFIG_TYPE% --no-dependencies
+
+
+updateVersion:
+  stage: updateVersion
+  only:
+    - tags
+  dependencies:
+    - validateBuild
+  script:
+    - powershell -ExecutionPolicy ByPass -file build-tools/versioning.ps1 -version %CI_BUILD_TAG% -configDir src/%PROJECT_NAME%/
+
+
+makeNuGet:
+  stage: package
+  before_script:
+    - echo "Restoring NuGet Packages..."
+    - dotnet restore "src/"
+  only:
+    - tags
+  script:
+    - echo 'Making NuGet package'
+    - dotnet pack "src\%PROJECT_NAME%" -o nupkg/ -c %CONFIG_TYPE%
+
+
+publishNuget:
+  stage: publish
+  only:
+    - tags
+  script:
+    - echo 'Publishing NuGet package'
+    - powershell -ExecutionPolicy ByPass -file build-tools/pushNuGet.ps1 -publishKey %NUGET_KEY% -projectName %PROJECT_NAME%
