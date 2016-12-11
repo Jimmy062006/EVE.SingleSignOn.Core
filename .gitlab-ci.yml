@@ -41,9 +41,6 @@ updateVersion:
 
 makeNuGet:
   stage: package
-  before_script:
-    - echo "Restoring NuGet Packages..."
-    - dotnet restore "src/"
   only:
     - tags
   script:
