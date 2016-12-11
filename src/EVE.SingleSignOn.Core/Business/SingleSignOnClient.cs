@@ -56,7 +56,7 @@ namespace EVE.SingleSignOn.Core
             };
 
             // Set the necessary headers
-            request.Headers.Authorization = new AuthenticationHeaderValue($"{TokenType.Basic}", _authorizationString);
+            request.Headers.Add("Authorization", $"{TokenType.Basic} {_authorizationString}");
             request.Headers.Add("Host", builder.Host);
             request.Headers.Add("User-Agent", _userAgent);
             
@@ -104,7 +104,7 @@ namespace EVE.SingleSignOn.Core
             };
 
             // Set the necessary headers
-            request.Headers.Authorization = new AuthenticationHeaderValue($"{TokenType.Basic}", _authorizationString);
+            request.Headers.Add("Authorization", $"{TokenType.Basic} {_authorizationString}");
             request.Headers.Add("Host", builder.Host);
             request.Headers.Add("User-Agent", _userAgent);
             
@@ -136,7 +136,7 @@ namespace EVE.SingleSignOn.Core
             };
 
             // Set the necessary headers
-            request.Headers.Authorization = new AuthenticationHeaderValue($"{TokenType.Bearer}", accessToken);
+            request.Headers.Add("Authorization", $"{TokenType.Bearer} {accessToken}");
             request.Headers.Add("Host", builder.Host);
             request.Headers.Add("User-Agent", _userAgent);
             

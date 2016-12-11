@@ -1,7 +1,7 @@
 ﻿{
   "authors": [ "Baldvin Th" ],
   "description": "EVE Online SingleSignOn client for use with third party development.",
-  "version": "1.0.1",
+  "version": "1.0.2",
 
   "dependencies": {
     "Newtonsoft.Json": "9.0.1"
