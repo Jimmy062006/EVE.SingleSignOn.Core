@@ -48,7 +48,7 @@ makeNuGet:
     - tags
   script:
     - echo 'Making NuGet package'
-    - dotnet pack "src\%PROJECT_NAME%" -o nupkg/ -c %CONFIG_TYPE% --no-build
+    - dotnet pack "src\%PROJECT_NAME%" -o nupkg/ -c %CONFIG_TYPE%
 
 
 publishNuget:
