@@ -1,4 +1,4 @@
-```
+```csharp
 using EVE.SingleSignOn.Core;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
