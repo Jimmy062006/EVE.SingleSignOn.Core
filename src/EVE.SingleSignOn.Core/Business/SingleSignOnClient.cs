@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -45,21 +46,27 @@ namespace EVE.SingleSignOn.Core
             var builder = new UriBuilder(_settings.BaseUrl)
             {
                 Path = _settings.TokenPath,
-                Query = $"grant_type=authorization_code&code={code}"
+            };
+
+            var formData = new Dictionary<string, string>
+            {
+                {"grant_type", "authorization_code"},
+                {"code", code}
             };
 
             // Create a new request message
             var request = new HttpRequestMessage()
             {
                 RequestUri = builder.Uri,
-                Method = HttpMethod.Post
+                Method = HttpMethod.Post,
+                Content = new FormUrlEncodedContent(formData)
             };
 
             // Set the necessary headers
             request.Headers.Add("Authorization", $"{TokenType.Basic} {_authorizationString}");
             request.Headers.Add("Host", builder.Host);
             request.Headers.Add("User-Agent", _userAgent);
-            
+
             return await CallSsoAsync<SsoResponse>(request);
         }
 
@@ -93,21 +100,27 @@ namespace EVE.SingleSignOn.Core
             var builder = new UriBuilder(_settings.BaseUrl)
             {
                 Path = _settings.TokenPath,
-                Query = $"grant_type=refresh_token&refresh_token={refreshToken}"
+            };
+
+            var formData = new Dictionary<string, string>
+            {
+                {"grant_type", "refresh_token"},
+                {"refresh_token", refreshToken}
             };
 
             // Create a new request message
             var request = new HttpRequestMessage()
             {
                 RequestUri = builder.Uri,
-                Method = HttpMethod.Post
+                Method = HttpMethod.Post,
+                Content = new FormUrlEncodedContent(formData)
             };
 
             // Set the necessary headers
             request.Headers.Add("Authorization", $"{TokenType.Basic} {_authorizationString}");
             request.Headers.Add("Host", builder.Host);
             request.Headers.Add("User-Agent", _userAgent);
-            
+
             return await CallSsoAsync<SsoResponse>(request);
         }
 
@@ -139,7 +152,7 @@ namespace EVE.SingleSignOn.Core
             request.Headers.Add("Authorization", $"{TokenType.Bearer} {accessToken}");
             request.Headers.Add("Host", builder.Host);
             request.Headers.Add("User-Agent", _userAgent);
-            
+
             return await CallSsoAsync<SsoCharacter>(request);
         }
 
@@ -150,7 +163,7 @@ namespace EVE.SingleSignOn.Core
         /// <returns></returns>
         private string AuthorizationString()
         {
-                return Convert.ToBase64String(Encoding.UTF8.GetBytes(_settings.ClientId + ":" + _settings.ClientSecret));
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(_settings.ClientId + ":" + _settings.ClientSecret));
         }
 
         /// <summary>
