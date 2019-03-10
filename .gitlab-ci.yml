@@ -1,4 +1,4 @@
-image: microsoft/dotnet:latest
+image: mcr.microsoft.com/dotnet/core/sdk:2.2
 
 variables:
   PROJECT_NAME: "EVE.SingleSignOn.Core"
@@ -12,18 +12,19 @@ stages:
 cache:
   key: $CI_BUILD_REF_NAME
   paths:
-  - nupkg/
+  - src/$PROJECT_NAME/npk/
 
 
 validateBuild:
   stage: package
   before_script:
   - echo "Restoring NuGet Packages & making nuget package..."
-  - dotnet restore "src/"
+  - cd src
+  - dotnet restore
   only:
     - tags
   script:
-    - dotnet build "src\$PROJECT_NAME" -c $CONFIG_TYPE -o npk -p:Version=$CI_BUILD_TAG
+    - dotnet build $PROJECT_NAME -c $CONFIG_TYPE -o npk -p:Version=$CI_BUILD_TAG
 
 publishNuget:
   stage: publish
@@ -31,5 +32,5 @@ publishNuget:
     - tags
   script:
     - echo 'Publishing NuGet package'
-    - cd nupkg
-    - dotnet nuget push *.$CI_BUILD_TAG.nupkg $NUGET_KEY -Source https://www.nuget.org/api/v2/package
+    - cd src/$PROJECT_NAME/npk/
+    - dotnet nuget push *.$CI_BUILD_TAG.nupkg -k $NUGET_KEY -s https://www.nuget.org/api/v2/package
