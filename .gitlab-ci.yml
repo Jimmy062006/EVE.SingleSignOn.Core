@@ -6,8 +6,6 @@ variables:
 before_script:
   - echo "starting build for $PROJECT_NAME"
 stages:
-  - validateBuild
-  - updateVersion
   - package
   - publish
 
