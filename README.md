@@ -7,45 +7,43 @@ namespace EVE.SSO.LoginTest.Controllers
 {
     public class LoginController : Controller
     {
-        private ISingleSignOnClient _sso;
+        private ISingleSignOnClient _client;
 
-        public LoginController()
+        public LoginController(ISingleSignOnClient client)
         {
-            // Example settings
-            var settings = new SsoSettings("https://login.eveonline.com/", "https://{hostname}/login/callback", "", "exampleClientId", "exampleClientSecret", "your@email.comes.here.com");
-
-            // Initialize the SSO cilent
-            _sso = new SingleSignOnClient(settings);
+            _client = client;
         }
 
         public IActionResult Login()
         {
             // OPTIONAL: If there is any redirect to be saved, 
             // do that before hitting the redirect
+            
+            // With client ID & secret...
+            var authUrl = _client.GetAuthenticationUrl(new Uri("https://login.eveonline.com/v2/oauth/authorize"), "myClientId", "SomeScopeHere", "https://{hostname}/login/callback", "Some-State-Parameter");
+
+            // PKCE alternative (https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce)
+            // authUrl = _client.GetAuthenticationUrl(new Uri("https://login.eveonline.com/v2/oauth/authorize"), "myClientId", "SomeScopeHere", "https://{hostname}/login/callback", "Some-State-Parameter", "Base64EncodedChallenge");
 
             // Redirect user to CCP's SSO
-            return Redirect(_sso.GetAuthenticationUrl());
+            return Redirect(authUrl);
         }
 
-        public IActionResult Logout()
+        public async Task<IActionResult> Callback(string code, string state)
         {
-            // Handle logging out & redirecting where you want
-            return RedirectToAction("Index", "Home");
-        }
+            // You should be validating that the state is correct here! Optional but recommended.
 
-        public async Task<IActionResult> Callback(string code)
-        {
             // Validate the code we just received
             // The response data should be stored somehow (authentication cookie / .net core identity)
             // https://docs.microsoft.com/en-us/aspnet/core/security/authentication/cookie?tabs=aspnetcore2x
-            SsoResponse authentication = await _sso.AuthenticateAsync(code);
+            Tokens tokens = await _client.AuthorizeAsync(new Uri("https://login.eveonline.com/v2/oauth/token"), "clientId", "clientSecret", code).ConfigureAwait(false);
 
-            // Information in SsoResponse includes a refresh token if any scope was requested
+            // PKCE alternative (https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce)
+            // tokens = await _client.AuthorizePKCEAsync(new Uri("https://login.eveonline.com/v2/oauth/token"), "clientId", "verifier", code).ConfigureAwait(false);
+
+            // Information in Tokens includes a refresh token if any scope was requested
             // To refresh information, just pass the refresh token to the RefreshAsync method
-            // Example: SsoResponse refresh = await _sso.RefreshAsync(authentication.RefreshToken);
-
-            // Use the access token to get information about the character that logged in
-            SsoCharacter character = await _sso.VerifyAsync(authentication.AccessToken);
+            // Example: Tokens refresh = await _client.RefreshAsync(new Uri("https://login.eveonline.com/v2/oauth/token"), "clientId", "clientSecret", refreshToken).ConfigureAwait(false);
 
             // OPTIONAL: Redirect to a specific location as specified in Login step
             return RedirectToAction("Index", "Home");
