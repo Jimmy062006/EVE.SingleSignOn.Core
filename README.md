@@ -11,6 +11,8 @@ namespace EVE.SSO.LoginTest.Controllers
 
         public LoginController(ISingleSignOnClient client)
         {
+            // Client is imported with dependency injection
+            // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-2.2
             _client = client;
         }
 
