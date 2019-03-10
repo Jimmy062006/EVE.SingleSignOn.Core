@@ -1,8 +1,10 @@
+image: microsoft/dotnet:latest
+
 variables:
   PROJECT_NAME: "EVE.SingleSignOn.Core"
   CONFIG_TYPE: "Release"
 before_script:
-  - echo "starting build for %PROJECT_NAME%"
+  - echo "starting build for $PROJECT_NAME"
 stages:
   - validateBuild
   - updateVersion
@@ -10,46 +12,20 @@ stages:
   - publish
 
 cache:
-  key: "%CI_BUILD_REF_NAME%"
+  key: $CI_BUILD_REF_NAME
   paths:
-  - src/%PROJECT_NAME%/project.json
   - nupkg/
 
 
 validateBuild:
-  stage: validateBuild
-  before_script:
-  - echo "Restoring NuGet Packages..."
-  - dotnet restore "src/"
-  only:
-    - branches
-  except:
-    - master
-  script:
-    - dotnet build "src\%PROJECT_NAME%" --configuration %CONFIG_TYPE% --no-dependencies
-
-
-updateVersion:
-  stage: updateVersion
-  only:
-    - tags
-  dependencies:
-    - validateBuild
-  script:
-    - powershell -ExecutionPolicy ByPass -file build-tools/versioning.ps1 -version %CI_BUILD_TAG% -configDir src/%PROJECT_NAME%/
-
-
-makeNuGet:
   stage: package
   before_script:
-    - echo "Restoring NuGet Packages..."
-    - dotnet restore "src/"
+  - echo "Restoring NuGet Packages & making nuget package..."
+  - dotnet restore "src/"
   only:
     - tags
   script:
-    - echo 'Making NuGet package'
-    - dotnet pack "src\%PROJECT_NAME%" -o nupkg/ -c %CONFIG_TYPE%
-
+    - dotnet build "src\$PROJECT_NAME" -c $CONFIG_TYPE -o npk -p:Version=$CI_BUILD_TAG
 
 publishNuget:
   stage: publish
@@ -57,4 +33,5 @@ publishNuget:
     - tags
   script:
     - echo 'Publishing NuGet package'
-    - powershell -ExecutionPolicy ByPass -file build-tools/pushNuGet.ps1 -publishKey %NUGET_KEY% -projectName %PROJECT_NAME%
+    - cd nupkg
+    - dotnet nuget push *.$CI_BUILD_TAG.nupkg $NUGET_KEY -Source https://www.nuget.org/api/v2/package
