@@ -53,3 +53,15 @@ namespace EVE.SSO.LoginTest.Controllers
     }
 }
 ```
+
+```csharp
+...
+// File: Startup.cs
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddHttpClient();
+    services.AddSingleton<ISingleSignOnClient, SingleSignOnClient>();
+    ...
+}
+...
+```
