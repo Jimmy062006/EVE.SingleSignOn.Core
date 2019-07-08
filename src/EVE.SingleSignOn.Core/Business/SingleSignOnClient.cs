@@ -10,12 +10,23 @@ namespace EVE.SingleSignOn.Core
     public class SingleSignOnClient : ISingleSignOnClient
     {
         protected readonly IHttpClientFactory _httpClientFactory;
+        protected readonly HttpClient _httpClient;
         protected readonly string _userAgent = "EVE.SingleSignOn.Core";
 
         public SingleSignOnClient(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
         }
+
+        public SingleSignOnClient(HttpClient httpClient)
+        {
+            _httpClient = httpClient ?? new HttpClient();
+        }
+
+        /// <summary>
+        /// Get a HttpClient regardless of constructor used
+        /// </summary>
+        private HttpClient _client => (_httpClientFactory != null) ? _httpClientFactory.CreateClient() : _httpClient;
 
         /// <summary>
         /// 
@@ -213,7 +224,7 @@ namespace EVE.SingleSignOn.Core
         /// <returns></returns>
         private async Task<T> Submit<T>(HttpRequestMessage request)
         {
-            HttpResponseMessage response = await _httpClientFactory.CreateClient().SendAsync(request).ConfigureAwait(false);
+            HttpResponseMessage response = await _client.SendAsync(request).ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
 
