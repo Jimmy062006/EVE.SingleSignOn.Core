@@ -67,5 +67,16 @@ namespace EVE.SingleSignOn.Core
         /// <param name="refreshToken"></param>
         /// <returns></returns>
         Task<Tokens> RefreshAsync(Uri uri, string clientId, string refreshToken);
+
+        /// <summary>
+        /// Verify the token against the Single Sign On Service.
+        /// If you have a v2 token, you can save yourself this call by validating the JWT signature
+        /// and/or opening the payload in order to get character information.
+        /// https://github.com/esi/esi-docs/blob/master/docs/sso/validating_eve_jwt.md
+        /// </summary>
+        /// <param name="uri">.../oauth/verify</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        Task<VerifyResponse> VerifyAsync(Uri uri, string token);
     }
 }

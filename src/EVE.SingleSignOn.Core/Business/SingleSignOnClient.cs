@@ -217,6 +217,30 @@ namespace EVE.SingleSignOn.Core
         }
 
         /// <summary>
+        /// Verify the token against the Single Sign On Service.
+        /// If you have a v2 token, you can save yourself this call by validating the JWT signature
+        /// and/or opening the payload in order to get character information.
+        /// https://github.com/esi/esi-docs/blob/master/docs/sso/validating_eve_jwt.md
+        /// </summary>
+        /// <param name="uri">.../oauth/verify</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task<VerifyResponse> VerifyAsync(Uri uri, string token)
+        {
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = uri,
+                Method = HttpMethod.Get
+            };
+
+            request.Headers.Add("Authorization", $"Bearer {token}");
+            request.Headers.Add("Host", uri.Host);
+            request.Headers.Add("User-Agent", _userAgent);
+
+            return await Submit<VerifyResponse>(request).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
