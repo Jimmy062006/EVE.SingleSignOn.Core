@@ -24,13 +24,13 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <PackageReference Include="System.Net.Http" Version="4.1.1" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <PackageReference Include="System.Net.Http" Version="4.1.1" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
